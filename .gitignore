@@ -1,0 +1,32 @@
+# Java / Maven
+backend/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# Maven wrapper
+!backend/.mvn/wrapper/maven-wrapper.jar
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Environment
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Keys (dev only - do NOT commit production keys)
+# backend/src/main/resources/privateKey.pem
+# backend/src/main/resources/publicKey.pem

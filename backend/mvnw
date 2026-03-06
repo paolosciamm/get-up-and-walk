@@ -1,0 +1,23 @@
+#!/bin/sh
+# Maven Wrapper script - downloads and runs Maven
+set -e
+
+MAVEN_VERSION="3.9.9"
+WRAPPER_DIR="$(dirname "$0")/.mvn/wrapper"
+MAVEN_HOME="$HOME/.m2/wrapper/dists/apache-maven-${MAVEN_VERSION}"
+MAVEN_CMD="$MAVEN_HOME/bin/mvn"
+
+if [ ! -f "$MAVEN_CMD" ]; then
+    echo "Downloading Apache Maven ${MAVEN_VERSION}..."
+    mkdir -p "$MAVEN_HOME"
+    TMPFILE=$(mktemp /tmp/maven-XXXXXX.zip)
+    curl -sL "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/${MAVEN_VERSION}/apache-maven-${MAVEN_VERSION}-bin.zip" -o "$TMPFILE"
+    unzip -qo "$TMPFILE" -d "$HOME/.m2/wrapper/dists/"
+    rm "$TMPFILE"
+    # The zip extracts to apache-maven-X.Y.Z, move contents
+    if [ -d "$HOME/.m2/wrapper/dists/apache-maven-${MAVEN_VERSION}" ]; then
+        echo "Maven ${MAVEN_VERSION} installed."
+    fi
+fi
+
+exec "$MAVEN_CMD" "$@"
