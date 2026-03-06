@@ -23,7 +23,7 @@ export default function GamePage() {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { position, accuracy, error: geoError, loading: geoLoading } = useGeolocation();
+  const { position, accuracy, error: geoError, errorCode: geoErrorCode, loading: geoLoading, retry: retryGeo } = useGeolocation();
   const { elapsed, reset: resetTimer } = useTimer(phase === 'playing');
   const { distance, updatePosition, reset: resetDistance } = useDistance();
   const { waypoints, loading: genLoading, error: genError, generate, markReached, reset: resetWaypoints } = useWaypointGenerator();
@@ -136,6 +136,10 @@ export default function GamePage() {
   }
 
   if (geoError) {
+    const isMac = navigator.platform.toUpperCase().includes('MAC');
+    const isPermissionDenied = geoErrorCode === 1;
+    const isPositionUnavailable = geoErrorCode === 2;
+
     return (
       <div style={{
         height: '100vh',
@@ -149,9 +153,59 @@ export default function GamePage() {
       }}>
         <div style={{ fontSize: '48px', marginBottom: '20px' }}>📍</div>
         <h2 style={{ color: 'var(--text-primary)', marginBottom: '12px' }}>GPS Required</h2>
-        <p style={{ color: 'var(--text-secondary)', maxWidth: '400px', lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--text-secondary)', maxWidth: '440px', lineHeight: 1.7, marginBottom: '20px' }}>
           {geoError}
         </p>
+
+        <div style={{
+          background: 'var(--bg-card)',
+          borderRadius: 'var(--radius)',
+          border: '1px solid var(--border)',
+          padding: '20px 24px',
+          maxWidth: '440px',
+          textAlign: 'left',
+          marginBottom: '24px',
+        }}>
+          <p style={{ color: 'var(--text-primary)', fontWeight: 600, marginBottom: '10px', fontSize: '0.9rem' }}>
+            How to fix:
+          </p>
+          <ol style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', lineHeight: 1.8, paddingLeft: '20px' }}>
+            {isMac && (
+              <>
+                <li>Open <strong>System Settings &gt; Privacy &amp; Security &gt; Location Services</strong></li>
+                <li>Make sure Location Services is <strong>ON</strong></li>
+                <li>Find your browser in the list and enable it</li>
+              </>
+            )}
+            {isPermissionDenied && (
+              <li>Click the <strong>lock icon</strong> in the address bar and allow location access</li>
+            )}
+            {isPositionUnavailable && !isMac && (
+              <>
+                <li>Make sure your device has GPS or Wi-Fi enabled</li>
+                <li>If on desktop, ensure Location Services is enabled in your OS settings</li>
+              </>
+            )}
+            <li>Make sure you are using <strong>HTTPS</strong> (https://localhost:5173)</li>
+            <li>Reload the page after enabling location</li>
+          </ol>
+        </div>
+
+        <button
+          onClick={retryGeo}
+          style={{
+            padding: '12px 32px',
+            borderRadius: 'var(--radius)',
+            border: 'none',
+            background: 'var(--accent)',
+            color: '#fff',
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            cursor: 'pointer',
+          }}
+        >
+          Retry
+        </button>
       </div>
     );
   }
