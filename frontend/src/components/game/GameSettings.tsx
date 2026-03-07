@@ -21,16 +21,23 @@ export default function GameSettings({
   return (
     <div style={{
       position: 'absolute',
-      bottom: '80px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      width: 'calc(100% - 32px)',
+      inset: 0,
+      zIndex: 999,
+      background: 'rgba(0, 0, 0, 0.4)',
+      backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '0 16px',
+    }}>
+    <div style={{
+      width: '100%',
       maxWidth: '400px',
       background: 'var(--bg-card)',
       borderRadius: 'var(--radius-lg)',
       border: '1px solid var(--border)',
       padding: '24px',
-      zIndex: 1000,
       boxShadow: 'var(--shadow-lg)',
       animation: 'slideUp 0.3s ease',
     }}>
@@ -65,6 +72,7 @@ export default function GameSettings({
       <Button fullWidth onClick={onGenerate} loading={loading}>
         Generate Waypoints
       </Button>
+    </div>
     </div>
   );
 }

@@ -10,8 +10,11 @@ interface Segment {
 export function sampleWaypoints(
   elements: OverpassElement[],
   count: number,
+  center: LatLng,
+  radiusMeters: number,
   minSeparation: number = 30
 ): LatLng[] {
+  // Only build segments from geometry within/near the radius
   const segments: Segment[] = [];
   let totalLen = 0;
 
@@ -20,6 +23,10 @@ export function sampleWaypoints(
     for (let i = 1; i < el.geometry.length; i++) {
       const start: LatLng = { lat: el.geometry[i - 1].lat, lng: el.geometry[i - 1].lon };
       const end: LatLng = { lat: el.geometry[i].lat, lng: el.geometry[i].lon };
+      // Skip segments where both endpoints are outside radius (with margin)
+      const dStart = haversineDistance(center, start);
+      const dEnd = haversineDistance(center, end);
+      if (dStart > radiusMeters * 1.2 && dEnd > radiusMeters * 1.2) continue;
       const length = haversineDistance(start, end);
       if (length > 0.5) {
         segments.push({ start, end, length });
@@ -39,10 +46,14 @@ export function sampleWaypoints(
     cumulativeLengths.push(cumLen);
   }
 
+  // Scale min separation based on area vs point count
+  const areaScale = Math.PI * radiusMeters * radiusMeters;
+  const densitySep = Math.sqrt(areaScale / count) * 0.3;
+  let currentMinSep = Math.min(minSeparation, densitySep);
+
   const waypoints: LatLng[] = [];
-  const maxAttempts = count * 50;
+  const maxAttempts = Math.max(count * 200, 2000);
   let attempts = 0;
-  let currentMinSep = minSeparation;
 
   while (waypoints.length < count && attempts < maxAttempts) {
     attempts++;
@@ -56,14 +67,17 @@ export function sampleWaypoints(
     const fraction = (randomDist - prevCum) / seg.length;
     const candidate = interpolate(seg.start, seg.end, Math.max(0, Math.min(1, fraction)));
 
+    // Reject candidates outside the radius circle
+    if (haversineDistance(center, candidate) > radiusMeters) continue;
+
     const tooClose = waypoints.some((wp) => haversineDistance(wp, candidate) < currentMinSep);
     if (!tooClose) {
       waypoints.push(candidate);
     }
 
     // Gradually relax separation if struggling to place points
-    if (attempts > 0 && attempts % (count * 10) === 0 && waypoints.length < count) {
-      currentMinSep = Math.max(5, currentMinSep * 0.7);
+    if (attempts > 0 && attempts % (count * 20) === 0 && waypoints.length < count) {
+      currentMinSep = Math.max(3, currentMinSep * 0.6);
     }
   }
 

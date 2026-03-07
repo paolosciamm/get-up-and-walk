@@ -17,7 +17,7 @@ export function useWaypointGenerator() {
         throw new Error('No walkable paths found in this area. Try increasing the radius.');
       }
 
-      const positions = sampleWaypoints(response.elements, count);
+      const positions = sampleWaypoints(response.elements, count, center, radiusMeters);
       const newWaypoints: Waypoint[] = positions.map((pos, i) => ({
         id: `wp-${Date.now()}-${i}`,
         position: pos,

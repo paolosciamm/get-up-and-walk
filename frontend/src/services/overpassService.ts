@@ -8,7 +8,7 @@ export async function fetchWalkableWays(
   radiusMeters: number
 ): Promise<OverpassResponse> {
   const query = `
-    [out:json][timeout:15];
+    [out:json][timeout:${radiusMeters > 2000 ? 30 : 15}];
     (
       way(around:${radiusMeters},${lat},${lon})
         ["highway"~"^(footway|path|pedestrian|residential|living_street|track|tertiary|secondary|unclassified|cycleway|service)$"]

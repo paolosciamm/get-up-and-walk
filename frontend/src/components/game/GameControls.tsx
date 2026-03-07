@@ -16,7 +16,7 @@ export default function GameControls({ phase, onNewGame, onStart, onStop, onPlay
       bottom: '24px',
       left: '50%',
       transform: 'translateX(-50%)',
-      zIndex: 1000,
+      zIndex: 998,
       display: 'flex',
       gap: '12px',
     }}>
