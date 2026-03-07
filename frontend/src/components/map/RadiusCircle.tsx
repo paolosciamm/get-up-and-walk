@@ -4,16 +4,24 @@ import type { LatLng } from '../../types/game';
 interface RadiusCircleProps {
   center: LatLng;
   radius: number;
+  theme: 'dark' | 'light';
 }
 
-export default function RadiusCircle({ center, radius }: RadiusCircleProps) {
+const COLORS = {
+  dark: '#ffd93d',
+  light: '#1a73e8',
+};
+
+export default function RadiusCircle({ center, radius, theme }: RadiusCircleProps) {
+  const color = COLORS[theme];
+
   return (
     <Circle
       center={[center.lat, center.lng]}
       radius={radius}
       pathOptions={{
-        color: '#4a9eff',
-        fillColor: '#4a9eff',
+        color,
+        fillColor: color,
         fillOpacity: 0.05,
         weight: 2,
         dashArray: '8 6',

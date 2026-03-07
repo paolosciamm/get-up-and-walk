@@ -20,10 +20,11 @@ export default function GamePage() {
   const [phase, setPhase] = useState<GamePhase>('idle');
   const [radiusMeters, setRadiusMeters] = useState(500);
   const [waypointCount, setWaypointCount] = useState(5);
+  const [generated, setGenerated] = useState(false);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { position, accuracy, error: geoError, errorCode: geoErrorCode, loading: geoLoading, retry: retryGeo } = useGeolocation();
+  const { position, accuracy, error: geoError, errorCode: geoErrorCode, loading: geoLoading, retry: retryGeo, setManualPosition } = useGeolocation();
   const { elapsed, reset: resetTimer } = useTimer(phase === 'playing');
   const { distance, updatePosition, reset: resetDistance } = useDistance();
   const { waypoints, loading: genLoading, error: genError, generate, markReached, reset: resetWaypoints } = useWaypointGenerator();
@@ -78,6 +79,7 @@ export default function GamePage() {
 
   const handleNewGame = () => {
     setPhase('configuring');
+    setGenerated(false);
     setError(null);
   };
 
@@ -86,6 +88,7 @@ export default function GamePage() {
     setError(null);
     try {
       await generate(position, radiusMeters, waypointCount);
+      setGenerated(true);
     } catch {
       // Error already set in hook
     }
@@ -117,6 +120,7 @@ export default function GamePage() {
     resetTimer();
     resetDistance();
     setSessionId(null);
+    setGenerated(false);
     setPhase('configuring');
   };
 
@@ -191,21 +195,44 @@ export default function GamePage() {
           </ol>
         </div>
 
-        <button
-          onClick={retryGeo}
-          style={{
-            padding: '12px 32px',
-            borderRadius: 'var(--radius)',
-            border: 'none',
-            background: 'var(--accent)',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            cursor: 'pointer',
-          }}
-        >
-          Retry
-        </button>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button
+            onClick={retryGeo}
+            style={{
+              padding: '12px 32px',
+              borderRadius: 'var(--radius)',
+              border: 'none',
+              background: 'var(--accent)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+            }}
+          >
+            Retry
+          </button>
+          <button
+            onClick={() => {
+              // Default: Cosenza, Italy (UNICAL area)
+              setManualPosition({ lat: 39.3566, lng: 16.2273 });
+            }}
+            style={{
+              padding: '12px 32px',
+              borderRadius: 'var(--radius)',
+              border: '1px solid var(--border)',
+              background: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+            }}
+          >
+            Use Demo Position
+          </button>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '12px' }}>
+          Demo position uses Cosenza, Italy. On mobile with GPS, your real position will be used.
+        </p>
       </div>
     );
   }
@@ -234,7 +261,7 @@ export default function GamePage() {
         />
       )}
 
-      {phase === 'configuring' && (
+      {phase === 'configuring' && !generated && (
         <GameSettings
           radiusMeters={radiusMeters}
           waypointCount={waypointCount}
